@@ -17,3 +17,15 @@
 .cursor-pointer{
   cursor: pointer;
 }
+
+.object-cover {
+  object-fit: cover;
+}
+
+.object-top{
+  object-position: top;
+}
+
+.w-fit-content{
+  width: fit-content;
+}

@@ -21,17 +21,19 @@ const ProductTable = ({ products, handleEdit, handleDelete }) => {
               <td>{prod.id}</td>
               <td>{prod.itemName}</td>
               <td>
-                <img
-                  src={`http://localhost:5000${prod.image}`}
-                  alt={prod.itemName}
-                  className='item-image object-cover'
-                  width={'50px'}
-                  height={'50px'}
-                />
+                {prod.featuredImage && (
+                  <img
+                    src={`http://localhost:5000/uploads/featured/${prod.featuredImage}`}
+                    alt={prod.itemName}
+                    className='item-image object-cover object-top'
+                    width={'50px'}
+                    height={'50px'}
+                  />
+                )}
               </td>
-              <td>${prod.new_price}</td>
-              <td>${prod.old_price}</td>
-              <td>{prod.category}</td>
+              <td>${prod.newPrice}</td>
+              <td>${prod.oldPrice}</td>
+              <td>{`${prod.category.name}`}</td>
               <td>
                 <button className="btn btn-primary btn-sm me-2" onClick={() => handleEdit(prod)}>
                   Edit

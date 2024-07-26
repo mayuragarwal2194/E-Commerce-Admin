@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { API_URL } from '../../Services/api'; // Import the API_URL from your services file
+import React, { useEffect, useState } from 'react';
+import { API_URL, getChildCategories, getAvailableSizes } from '../../Services/api'; // Import the API_URL from your services file
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './ProductForm.css';
@@ -10,6 +10,7 @@ const ProductForm = () => {
   const [itemName, setItemName] = useState('');
   const [newPrice, setNewPrice] = useState('');
   const [oldPrice, setOldPrice] = useState('');
+  const [category, setCategory] = useState('');
   const [isPopular, setIsPopular] = useState(false);
   const [shortDescription, setShortDescription] = useState('');
   const [fullDescription, setFullDescription] = useState('');
@@ -24,9 +25,44 @@ const ProductForm = () => {
     quantity: '',
     attributes: {
       color: '',
-      size: ''
-    }
+      size: []
+    },
+    variantFeaturedImage: null,
+    variantGalleryImages: []
   }]);
+
+
+  const [childCategories, setChildCategories] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
+
+  useEffect(() => {
+    const fetchSizes = async () => {
+      try {
+        const sizes = await getAvailableSizes();
+        setAvailableSizes(sizes);
+      } catch (error) {
+        console.error('Error fetching sizes:', error);
+      }
+    };
+
+    fetchSizes();
+  }, []);
+
+  useEffect(() => {
+    const fetchChildCategories = async () => {
+      try {
+        console.log('Calling getChildCategories API');
+        const data = await getChildCategories(); // Use the getChildCategories function
+        console.log('Fetched Child Categories:', data); // Log fetched data
+        setChildCategories(data);
+      } catch (error) {
+        console.error('Error fetching child categories:', error);
+        toast.error('Error fetching child categories');
+      }
+    };
+
+    fetchChildCategories();
+  }, []);
 
   // Handle form field changes
   const handleChange = (setter) => (e) => setter(e.target.value);
@@ -47,14 +83,56 @@ const ProductForm = () => {
     );
   };
 
+  const handleVariantFileChange = (index, field) => (e) => {
+    const file = e.target.files[0];
+    setVariants((prevVariants) =>
+      prevVariants.map((variant, i) =>
+        i === index ? { ...variant, [field]: file } : variant
+      )
+    );
+  };
+
+  const handleVariantGalleryChange = (index) => (e) => {
+    const files = Array.from(e.target.files);
+    setVariants((prevVariants) =>
+      prevVariants.map((variant, i) =>
+        i === index ? { ...variant, variantGalleryImages: files } : variant
+      )
+    );
+  };
+
+  const handleSizeChange = (index, size) => (e) => {
+    setVariants((prevVariants) =>
+      prevVariants.map((variant, i) =>
+        i === index
+          ? {
+            ...variant,
+            attributes: {
+              ...variant.attributes,
+              size: e.target.checked
+                ? [...variant.attributes.size, size]
+                : variant.attributes.size.filter((s) => s !== size),
+            },
+          }
+          : variant
+      )
+    );
+  };
+
+
   // Add a new variant form
   const addVariant = () => {
     setVariants([...variants, {
-      sku: '', newPrice: '', oldPrice: '', quantity: '',
+      sku: '',
+      newPrice: '',
+      oldPrice: '',
+      quantity: '',
       attributes: {
         color: '',
-        size: ''
-      }
+        size: []
+      },
+      variantFeaturedImage: null,
+      variantGalleryImages: []
     }]);
   };
 
@@ -68,6 +146,7 @@ const ProductForm = () => {
     formData.append('itemName', itemName);
     formData.append('newPrice', newPrice);
     formData.append('oldPrice', oldPrice);
+    formData.append('category', category);
     formData.append('isPopular', isPopular);
     formData.append('shortDescription', shortDescription);
     formData.append('fullDescription', fullDescription);
@@ -77,7 +156,20 @@ const ProductForm = () => {
     });
     formData.append('stockStatus', stockStatus);
     formData.append('tag', tag);
-    formData.append('variants', JSON.stringify(variants)); // Add variants to form data as a JSON string
+    formData.append('variants', JSON.stringify(variants.map((variant, index) => ({
+      ...variant,
+      variantFeaturedImage: variant.variantFeaturedImage?.name,
+      variantGalleryImages: variant.variantGalleryImages.map(file => file.name)
+    })))); // Add variants to form data as a JSON string
+
+    variants.forEach((variant, index) => {
+      if (variant.variantFeaturedImage) {
+        formData.append(`variantFeaturedImage${index}`, variant.variantFeaturedImage);
+      }
+      variant.variantGalleryImages.forEach((file, fileIndex) => {
+        formData.append(`variantGalleryImages${index}`, file);
+      });
+    });
 
 
     try {
@@ -110,7 +202,7 @@ const ProductForm = () => {
       setGalleryImages([]);
       setStockStatus('In Stock');
       setTag('');
-      setVariants([{ sku: '', newPrice: '', oldPrice: '', quantity: '', attributes: { color: '', size: '' } }]); // Reset variants
+      setVariants([{ sku: '', newPrice: '', oldPrice: '', quantity: '', attributes: { color: '', size: [] }, variantFeaturedImage: null, variantGalleryImages: [] }]); // Reset variants
     } catch (error) {
       console.error('Error submitting form:', error);
       // Display an error message using react-toastify
@@ -237,7 +329,7 @@ const ProductForm = () => {
             Popular Product
           </label>
         </div>
-        <div className="d-flex align-items-start gap-3 w-75 mb-5 pb-5">
+        <div className="d-flex align-items-start gap-3 w-75 mb-3">
           <div className="input-wrapper w-50">
             <label htmlFor="stockStatus" className="cursor-pointer d-block mb-1">Stock Status</label>
             <select
@@ -270,6 +362,28 @@ const ProductForm = () => {
             </select>
           </div>
         </div>
+        <div className="d-flex align-items-start gap-3 w-75 mb-5 pb-5">
+          <div className="input-wrapper w-50">
+            <label htmlFor="category" className="cursor-pointer d-block mb-1">Select Category</label>
+            <select
+              id="category"
+              name="category"
+              value={category}
+              onChange={handleChange(setCategory)}
+              className="px-2 rounded w-100"
+              required
+            >
+              <option value="">Select Category</option>
+              {childCategories.map((child, index) => (
+                <option key={index} value={child._id}>
+                  {`${child.name} (${child.parents.map(parent => parent.name).join(', ')})`}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Variants Form */}
         <div className="w-75 mb-5 pb-5">
           <h4>Variants</h4>
           {variants.map((variant, index) => (
@@ -337,14 +451,42 @@ const ProductForm = () => {
                   />
                 </div>
                 <div className="input-wrapper w-50">
-                  <label htmlFor={`size-${index}`} className="cursor-pointer d-block mb-1">Size</label>
+                  <label htmlFor={`variantSize${index}`} className="cursor-pointer d-block mb-1">Size</label>
+                  <div className='w-fit-content d-flex align-items-center gap-3'>
+                    {availableSizes.map((size) => (
+                      <label key={size._id} className="me-2 text-uppercase d-flex align-items-center gap-1">
+                        <input
+                          type="checkbox"
+                          name={`variantSize${index}`}
+                          value={size.sizeName}
+                          checked={variant.attributes.size.includes(size.sizeName)}
+                          onChange={handleSizeChange(index, size.sizeName)}
+                        />
+                        {size.sizeName}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+              <div className="d-flex align-items-center gap-3 mb-3">
+                <div>
+                  <label htmlFor={`variantFeaturedImage-${index}`} className="cursor-pointer d-block mb-1">Variant Featured Image</label>
                   <input
-                    type="text"
-                    id={`size-${index}`}
-                    placeholder="Size"
-                    className="px-2 rounded w-100"
-                    value={variant.attributes.size}
-                    onChange={handleVariantChange(index, 'size', true)}
+                    type="file"
+                    id={`variantFeaturedImage-${index}`}
+                    onChange={handleVariantFileChange(index, 'variantFeaturedImage')}
+                    className="form-control"
+                  />
+                </div>
+                <div>
+                  <label htmlFor={`variantGalleryImages-${index}`} className="cursor-pointer d-block mb-1">Variant Gallery Images</label>
+                  <input
+                    type="file"
+                    id={`variantGalleryImages-${index}`}
+                    onChange={handleVariantGalleryChange(index)}
+                    multiple
+                    className="form-control"
                   />
                 </div>
               </div>

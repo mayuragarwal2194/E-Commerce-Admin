@@ -41,3 +41,17 @@ export const getChildCategories = async () => {
     throw error;
   }
 };
+
+export const getAvailableSizes = async () => {
+  try {
+    const response = await fetch(`${API_URL}/size`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const sizes = await response.json();
+    return sizes;
+  } catch (error) {
+    console.error('Error fetching available sizes:', error);
+    throw error;
+  }
+};
