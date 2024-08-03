@@ -1,6 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+// Function to fetch parent category details by ID
+const fetchParentCategoryById = async (parentId) => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/v1/parentcategories/${parentId}`);
+    const parent = await response.json();
+    return parent.name; // Adjust based on your actual API response
+  } catch (error) {
+    console.error('Error fetching parent category:', error);
+    return 'Unknown Category';
+  }
+};
 
 const ProductTable = ({ products, handleEdit, handleDelete }) => {
+  const [parentCategoryNames, setParentCategoryNames] = useState({});
+
+  useEffect(() => {
+    const fetchParentCategories = async () => {
+      const parentNames = {};
+      for (const prod of products) {
+        if (prod.category.parent) {
+          const parentId = prod.category.parent; // Adjust this if needed
+          if (!parentNames[parentId]) {
+            const name = await fetchParentCategoryById(parentId);
+            parentNames[parentId] = name;
+          }
+        }
+      }
+      setParentCategoryNames(parentNames);
+    };
+
+    fetchParentCategories();
+  }, [products]);
+
   return (
     <div className="table-responsive">
       <table className="table table-striped">
@@ -33,7 +65,12 @@ const ProductTable = ({ products, handleEdit, handleDelete }) => {
               </td>
               <td>${prod.newPrice}</td>
               <td>${prod.oldPrice}</td>
-              <td>{`${prod.category.name}`}</td>
+              <td>
+                {prod.category.name} 
+                {prod.category.parent && (
+                  <span> ({parentCategoryNames[prod.category.parent] || 'Loading...'})</span>
+                )}
+              </td>
               <td>
                 <button className="btn btn-primary btn-sm me-2" onClick={() => handleEdit(prod)}>
                   Edit

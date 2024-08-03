@@ -1,25 +1,37 @@
 import React, { useState, useEffect } from 'react';
 
-const AddCategory = ({ fetchCategories, categories = [], categoryToEdit }) => {
-  const initialCategoryState = {
+const AddChildCategory = () => {
+  const [category, setCategory] = useState({
     name: '',
-    parent: '', // Initialize as an empty string
+    parent: '', // Single parent selection
     isActive: true,
     showInNavbar: false,
-  };
+  });
 
-  const [category, setCategory] = useState(initialCategoryState);
+  const [parentCategories, setParentCategories] = useState([]);
+  const [categoryToEdit, setCategoryToEdit] = useState(null);
 
   useEffect(() => {
+    // Fetch parent categories
+    const fetchParentCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/parentcategories');
+        const data = await response.json();
+        setParentCategories(data);
+      } catch (error) {
+        console.error('Error fetching parent categories:', error);
+      }
+    };
+
+    fetchParentCategories();
+
+    // Set category to edit if there's a category to edit
     if (categoryToEdit) {
       setCategory({
         ...categoryToEdit,
-        parent: categoryToEdit.parent || '', // Ensure parent is an empty string if null
+        parent: categoryToEdit.parent || '',
       });
-    } else {
-      setCategory(initialCategoryState);
     }
-  // eslint-disable-next-line
   }, [categoryToEdit]);
 
   const handleChange = (e) => {
@@ -32,18 +44,18 @@ const AddCategory = ({ fetchCategories, categories = [], categoryToEdit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Submitting category data:', category); // Added logging for debugging
+
     try {
-      // Remove 'parent' field from category if it's an empty string
       const categoryData = {
         ...category,
-        parent: category.parent || null, // Set parent to null if it's an empty string
       };
 
-      let url = 'http://localhost:5000/categories';
+      let url = 'http://localhost:5000/childcategories/add';
       let method = 'POST';
 
       if (categoryToEdit) {
-        url += `/${categoryToEdit._id}`;
+        url = `http://localhost:5000/childcategories/${categoryToEdit._id}`;
         method = 'PUT';
       }
 
@@ -56,26 +68,27 @@ const AddCategory = ({ fetchCategories, categories = [], categoryToEdit }) => {
       });
 
       if (response.ok) {
-        if (categoryToEdit) {
-          alert('Category updated successfully!');
-        } else {
-          alert('Category added successfully!');
-        }
-        fetchCategories(); // Refresh categories after adding or updating
-        setCategory(initialCategoryState); // Reset form state
+        alert(categoryToEdit ? 'Category updated successfully!' : 'Category added successfully!');
+        setCategory({
+          name: '',
+          parent: '', // Reset single parent selection
+          isActive: true,
+          showInNavbar: false,
+        }); // Reset form state
+        setCategoryToEdit(null);
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to add or update category');
       }
     } catch (error) {
       console.error('Error adding or updating category:', error.message);
-      // Handle error state or show error to the user
+      alert(error.message);
     }
   };
 
   return (
     <div className="add-category">
-      <h2>{categoryToEdit ? 'Edit Category' : 'Add Category'}</h2>
+      <h2>{categoryToEdit ? 'Edit Child Category' : 'Add Child Category'}</h2>
       <form onSubmit={handleSubmit} className="d-flex flex-column align-items-start gap-3">
         <input
           type="text"
@@ -84,16 +97,18 @@ const AddCategory = ({ fetchCategories, categories = [], categoryToEdit }) => {
           onChange={handleChange}
           placeholder="Category Name"
           required
-          className='px-2'
+          autoComplete='true'
+          className="px-2"
         />
         <select
           name="parent"
-          value={category.parent || ''} // Ensure value is an empty string if null
+          value={category.parent}
           onChange={handleChange}
-          className='px-2'
+          className="px-2"
+          required
         >
-          <option value=''>No Parent</option>
-          {categories.length > 0 && categories.map(cat => (
+          <option value="">Select Parent Category</option>
+          {parentCategories.map((cat) => (
             <option key={cat._id} value={cat._id}>
               {cat.name}
             </option>
@@ -119,7 +134,7 @@ const AddCategory = ({ fetchCategories, categories = [], categoryToEdit }) => {
             />
           </label>
         </div>
-        <button type="submit" className='btn_fill_red text-white px-4 py-2 rounded-pill cursor-pointer fw-500'>
+        <button type="submit" className="btn_fill_red text-white px-4 py-2 rounded-pill cursor-pointer fw-500">
           {categoryToEdit ? 'Update Category' : 'Add Category'}
         </button>
       </form>
@@ -127,4 +142,4 @@ const AddCategory = ({ fetchCategories, categories = [], categoryToEdit }) => {
   );
 };
 
-export default AddCategory;
+export default AddChildCategory;

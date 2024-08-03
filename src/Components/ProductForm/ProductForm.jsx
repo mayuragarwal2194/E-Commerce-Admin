@@ -51,9 +51,9 @@ const ProductForm = () => {
   useEffect(() => {
     const fetchChildCategories = async () => {
       try {
-        console.log('Calling getChildCategories API');
+        // console.log('Calling getChildCategories API');
         const data = await getChildCategories(); // Use the getChildCategories function
-        console.log('Fetched Child Categories:', data); // Log fetched data
+        // console.log('Fetched Child Categories:', data); // Log fetched data
         setChildCategories(data);
       } catch (error) {
         console.error('Error fetching child categories:', error);
@@ -376,7 +376,7 @@ const ProductForm = () => {
               <option value="">Select Category</option>
               {childCategories.map((child, index) => (
                 <option key={index} value={child._id}>
-                  {`${child.name} (${child.parents.map(parent => parent.name).join(', ')})`}
+                  {`${child.name} (${child.parent.name})`}
                 </option>
               ))}
             </select>
@@ -451,10 +451,10 @@ const ProductForm = () => {
                   />
                 </div>
                 <div className="input-wrapper w-50">
-                  <label htmlFor={`variantSize${index}`} className="cursor-pointer d-block mb-1">Size</label>
+                  <div>Size</div>
                   <div className='w-fit-content d-flex align-items-center gap-3'>
                     {availableSizes.map((size) => (
-                      <label key={size._id} className="me-2 text-uppercase d-flex align-items-center gap-1">
+                      <label key={size._id} className="me-2 text-uppercase d-flex align-items-center gap-1 cursor-pointer">
                         <input
                           type="checkbox"
                           name={`variantSize${index}`}

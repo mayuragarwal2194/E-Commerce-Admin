@@ -18,12 +18,37 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/" element={<AdminLayout />}>
-        <Route index element={<AdminPanel activeTab="addProduct" />} />
-        <Route path="/viewproduct" element={<AdminPanel activeTab="viewProducts" />} />
-        <Route path="/parentcategories/add" element={<AdminPanel activeTab="addParentCategory" />} />
-        <Route path="/parentcategories/view" element={<AdminPanel activeTab="viewParentCategories" />} />
-        <Route path="/childcategories/add" element={<AdminPanel activeTab="addChildCategory" />} />
-        <Route path="/childcategories/view" element={<AdminPanel activeTab="viewChildCategories" />} />
+        <Route
+          index
+          element={<AdminPanel activeTab="addProduct" />} />
+        <Route
+          path="/viewproduct"
+          element={<AdminPanel activeTab="viewProducts" />}
+        />
+        <Route
+          path="/addtopcategory"
+          element={<AdminPanel activeTab="addTopCategory" />}
+        />
+        <Route
+          path="/viewtopcategory"
+          element={<AdminPanel activeTab="viewTopCategory" />}
+        />
+        <Route
+          path="/parentcategories/add"
+          element={<AdminPanel activeTab="addParentCategory" />}
+        />
+        <Route
+          path="/parentcategories/view"
+          element={<AdminPanel activeTab="viewParentCategories" />}
+        />
+        <Route
+          path="/childcategories/add"
+          element={<AdminPanel activeTab="addChildCategory" />}
+        />
+        <Route
+          path="/childcategories/view"
+          element={<AdminPanel activeTab="viewChildCategories" />}
+        />
       </Route>
     </Routes>
   );

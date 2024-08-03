@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import './AdminPanel.css';
-import AddCategory from './Categories/AddCategory';
-import ViewCategories from './Categories/ViewCategories';
+import AddParentCategory from './Categories/ParentCategory/AddParentCategory';
+import ViewParentCategories from './Categories/ParentCategory/viewParentCategory';
+import AddChildCategory from './Categories/ChildCategory/AddChildCategory';
+import ViewChildCategory from './Categories/ChildCategory/ViewChildCategory';
 import ProductForm from './ProductForm/ProductForm';
 import ViewProducts from './ViewProduct/ViewProduct';
 import { getAllProducts, getParentCategories, getChildCategories } from '../Services/api';
+import AddTopCategory from './Categories/TopCategory/AddTopCategory';
+import ViewTopCategory from './Categories/TopCategory/ViewTopCategory';
 
 const AdminPanel = ({ activeTab: initialTab }) => {
   const [products, setProducts] = useState([]);
@@ -73,26 +77,32 @@ const AdminPanel = ({ activeTab: initialTab }) => {
       {activeTab === 'viewProducts' && (
         <ViewProducts products={products} fetchProducts={fetchProducts} />
       )}
+      {activeTab === 'addTopCategory' && (
+        <AddTopCategory />
+      )}
+      {activeTab === 'viewTopCategory' && (
+        <ViewTopCategory />
+      )}
       {activeTab === 'addParentCategory' && (
-        <AddCategory fetchCategories={fetchParentCategories} />
+        <AddParentCategory />
       )}
       {activeTab === 'editParentCategory' && (
-        <AddCategory fetchCategories={fetchParentCategories} categoryToEdit={location.state?.category} />
+        <AddParentCategory />
       )}
       {activeTab === 'viewParentCategories' && (
-        <ViewCategories
+        <ViewParentCategories
           categories={parentCategories}
           fetchCategories={fetchParentCategories}
         />
       )}
       {activeTab === 'addChildCategory' && (
-        <AddCategory fetchCategories={fetchChildCategories} />
+        <AddChildCategory fetchCategories={fetchChildCategories} />
       )}
       {activeTab === 'editChildCategory' && (
-        <AddCategory fetchCategories={fetchChildCategories} categoryToEdit={location.state?.category} />
+        <AddParentCategory fetchCategories={fetchChildCategories} categoryToEdit={location.state?.category} />
       )}
       {activeTab === 'viewChildCategories' && (
-        <ViewCategories
+        <ViewChildCategory
           categories={childCategories}
           fetchCategories={fetchChildCategories}
         />

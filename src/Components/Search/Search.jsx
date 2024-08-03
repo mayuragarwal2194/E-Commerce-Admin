@@ -9,6 +9,8 @@ const Search = ({ searchQuery, setSearchQuery }) => {
 
   return (
     <input
+      id='search'
+      name='search'
       type="text"
       value={searchQuery}
       onChange={handleSearchChange}

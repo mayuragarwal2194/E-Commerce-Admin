@@ -17,6 +17,18 @@ const AdminSidebar = () => {
         View Products
       </NavLink>
       <NavLink 
+        to="/addtopcategory" 
+        className={({ isActive }) => `list-group-item list-group-item-action ${isActive ? 'active' : ''}`}
+      >
+        Add Top Category
+      </NavLink>
+      <NavLink 
+        to="/viewtopcategory" 
+        className={({ isActive }) => `list-group-item list-group-item-action ${isActive ? 'active' : ''}`}
+      >
+        View Top Category
+      </NavLink>
+      <NavLink 
         to="/parentcategories/add" 
         className={({ isActive }) => `list-group-item list-group-item-action ${isActive ? 'active' : ''}`}
       >
